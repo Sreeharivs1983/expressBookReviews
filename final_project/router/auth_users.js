@@ -33,25 +33,17 @@ regd_users.post("/login", (req,res) => {
     const username = req.body.username;
     const password = req.body.password;
   
-    if (!username || !password) {
-      return res.status(400).json({ message: "Username and password required" });
-    }
-  
     if (!authenticatedUser(username, password)) {
-      return res.status(403).json({ message: "Invalid Login. Check username and password" });
+      return res.status(403).json({ message: "Invalid Login" });
     }
   
     let accessToken = jwt.sign(
-      {
-        data: username
-      },
+      { data: username },
       "access",
       { expiresIn: 60 * 60 }
     );
   
-    req.session.authorization = {
-      accessToken
-    };
+    req.session.authorization = { accessToken };
   
     return res.status(200).json({
       message: "User successfully logged in",
@@ -59,12 +51,31 @@ regd_users.post("/login", (req,res) => {
     });
   
   });
-
-// Add a book review
+// Add a book review-edit modify review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
-});
+
+    const isbn = req.params.isbn;
+    const review = req.query.review;
+  
+    if (!req.user || !req.user.data) {
+      return res.status(403).json({ message: "User not authenticated properly" });
+    }
+  
+    const username = req.user.data;
+  
+    if (!books[isbn]) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+  
+    if (!review) {
+      return res.status(400).json({ message: "Review text missing" });
+    }
+  
+    books[isbn].reviews[username] = review;
+  
+    return res.status(200).json({ message: "Review added/updated successfully" });
+  
+  });
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
