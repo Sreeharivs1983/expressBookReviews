@@ -51,7 +51,8 @@ regd_users.post("/login", (req,res) => {
     });
   
   });
-// Add a book review-edit modify review
+
+// Add or Modify a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
 
     const isbn = req.params.isbn;
@@ -76,6 +77,33 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
     return res.status(200).json({ message: "Review added/updated successfully" });
   
   });
+
+
+// 🔥 NEW TASK 9 – Delete a Book Review
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+
+    const isbn = req.params.isbn;
+
+    if (!req.user || !req.user.data) {
+      return res.status(403).json({ message: "User not authenticated properly" });
+    }
+
+    const username = req.user.data;
+
+    if (!books[isbn]) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+
+    if (!books[isbn].reviews[username]) {
+      return res.status(404).json({ message: "No review found for this user" });
+    }
+
+    delete books[isbn].reviews[username];
+
+    return res.status(200).json({ message: "Review deleted successfully" });
+
+});
+
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
